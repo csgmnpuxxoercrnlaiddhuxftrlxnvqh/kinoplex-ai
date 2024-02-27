@@ -109,7 +109,7 @@ async def announce_showing(interaction: discord.Interaction, stream_title:str,st
         theater_channel = discord.utils.get(kinoplex.channels,id=config["announce_channels"]["theater"])
         await theater_channel.send(message)
 
-#@client.tree.command(name="roll",description="Roll a 4 digit number.",guild=discord.Object(id=kinoplex_id))
+@client.tree.command(name="roll",description="Roll a 4 digit number.",guild=discord.Object(id=kinoplex_id))
 async def roll(interaction: discord.Interaction,msg:str=''):
     digits = "{:02d}".format(random.randint(0,9999))
     if msg == '':
