@@ -120,6 +120,8 @@ async def roll(interaction: discord.Interaction):
     dubs = checked(digits)
     if dubs > 1:
         message = f"🤖: {digits[:len(digits) - dubs:]}**{digits[len(digits) - dubs::]}**"
+        if dubs == 4:
+            message = "# " + message
     else:
         message = f"🤖: {digits}"
     await interaction.response.send_message(message)
