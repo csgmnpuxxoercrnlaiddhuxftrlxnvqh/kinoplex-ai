@@ -114,8 +114,8 @@ async def roll(interaction: discord.Interaction):
     message = f"🤖: `{digits}`"
     await interaction.response.send_message(message)
 
-@client.tree.command(name="dice",description="Roll a dice.",guild=discord.Object(id=kinoplex_id))
-async def dice(interaction: discord.Interaction,sides:int,number_of_dice:int):
+@client.tree.command(name="dice",description="Roll dice",guild=discord.Object(id=kinoplex_id))
+async def dice(interaction: discord.Interaction,number_of_dice:int,sides:int):
     total = 0
     if sides < 1:
         sides = 1
