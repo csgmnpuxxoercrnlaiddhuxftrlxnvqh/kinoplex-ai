@@ -101,20 +101,32 @@ async def announce_showing(interaction: discord.Interaction, stream_title:str,st
         return
     else:
         role = discord.utils.get(kinoplex.roles,id=usermap[str(user.id)])
-        message = f"{role.mention} - User {user.mention} has scheduled a showing: `{stream_title}`, which starts in: `{starts_in}`."
+        message = f"{role.mention} - User {user.mention} has scheduled a showing: `{stream_title}`, which starts in: `{starts_in}`.\n{config['link_map'][str(user.id)]}"
         if schedule != '':
-            message += " Schedule: `" + schedule + "`"
+            message += " \nSchedule: `" + schedule + "`"
         theater_channel = discord.utils.get(kinoplex.channels,id=config["announce_channels"]["theater"])
         await theater_channel.send(message)
         await interaction.response.send_message("Announcement posted!",ephemeral=True)
 
 @client.tree.command(name="roll",description="Roll a 4 digit number.",guild=discord.Object(id=kinoplex_id))
-async def roll(interaction: discord.Interaction,msg:str=''):
+async def roll(interaction: discord.Interaction):
     digits = "{:04d}".format(random.randint(0,9999))
-    if msg == '':
-        message = f"🤖: `{digits}`"
-    else:
-        message = f"{msg}: `{digits}`"
+    message = f"🤖: `{digits}`"
     await interaction.response.send_message(message)
+
+@client.tree.command(name="dice",description="Roll a dice.",guild=discord.Object(id=kinoplex_id))
+async def dice(interaction: discord.Interaction,sides:int,number_of_dice:int):
+    total = 0
+    if sides < 1:
+        sides = 1
+    if sides > 100:
+        sides = 100
+    if number_of_dice > 1000:
+        number_of_dice = 1000
+    if number_of_dice < 1:
+        number_of_dice = 1
+    for _ in range(number_of_dice):
+        total += random.randint(1,sides)
+    await interaction.response.send_message(f"Rolling {number_of_dice}d{sides}: {total}")
 
 client.run(token)
