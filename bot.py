@@ -110,7 +110,7 @@ async def announce_showing(interaction: discord.Interaction, stream_title:str,st
 
 @client.tree.command(name="roll",description="Roll a 4 digit number.",guild=discord.Object(id=kinoplex_id))
 async def roll(interaction: discord.Interaction,msg:str=''):
-    digits = "{:02d}".format(random.randint(0,9999))
+    digits = "{:04d}".format(random.randint(0,9999))
     if msg == '':
         message = f"🤖: `{digits}`"
     else:
