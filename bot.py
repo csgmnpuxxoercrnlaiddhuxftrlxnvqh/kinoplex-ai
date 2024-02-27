@@ -80,8 +80,6 @@ async def on_raw_reaction_add(payload):
     user = kinoplex.get_member(payload.user_id)
     if payload.message_id == react_msg_theater:
         if payload.user_id in admin_ids: return
-        print(payload.user_id)
-        print(admin_ids)
         await role_mod(user,en,"add")
 
 @client.event
