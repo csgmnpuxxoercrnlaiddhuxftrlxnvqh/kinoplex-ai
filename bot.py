@@ -106,6 +106,7 @@ async def announce_showing(interaction: discord.Interaction, stream_title:str,st
             message += " Schedule: `" + schedule + "`"
         theater_channel = discord.utils.get(kinoplex.channels,id=config["announce_channels"]["theater"])
         await theater_channel.send(message)
+        await interaction.response.send_message("Announcement posted!",ephemeral=True)
 
 @client.tree.command(name="roll",description="Roll a 4 digit number.",guild=discord.Object(id=kinoplex_id))
 async def roll(interaction: discord.Interaction,msg:str=''):
@@ -114,6 +115,6 @@ async def roll(interaction: discord.Interaction,msg:str=''):
         message = f"🤖: `{digits}`"
     else:
         message = f"{msg}: `{digits}`"
-    await theater_channel.send(message)
+    await interaction.response.send_message(message)
 
 client.run(token)
