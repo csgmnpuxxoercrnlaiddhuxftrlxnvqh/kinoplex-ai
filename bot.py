@@ -29,6 +29,12 @@ global kinoplex
 global emojimap
 global usermap
 
+def checked(digits):
+    for idx, digit in enumerate(reversed(digits)):
+     if idx + 1 >= len(digits):
+        return idx + 1
+     if digit != digits[::-1][idx + 1]:
+        return idx + 1
 
 async def role_mod(user,emoji,side):
     global emojimap
@@ -111,7 +117,11 @@ async def announce_showing(interaction: discord.Interaction, stream_title:str,st
 @client.tree.command(name="roll",description="Roll a 4 digit number.",guild=discord.Object(id=kinoplex_id))
 async def roll(interaction: discord.Interaction):
     digits = "{:04d}".format(random.randint(0,9999))
-    message = f"🤖: `{digits}`"
+    dubs = checked(digits)
+    if dubs > 1:
+        message = f"🤖: {digits[:len(digits) - dubs:]}**{digits[len(digits) - dubs::]}**"
+    else:
+        message = f"🤖: {digits}"
     await interaction.response.send_message(message)
 
 @client.tree.command(name="dice",description="Roll dice",guild=discord.Object(id=kinoplex_id))
