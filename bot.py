@@ -71,7 +71,7 @@ async def on_ready():
     await tree.sync(guild=kinoplex)
     print(f"Commands loaded")
     
-
+    print(kinoplex.emojis)
 
 @client.event
 async def on_raw_reaction_add(payload):
@@ -128,5 +128,19 @@ async def dice(interaction: discord.Interaction,number_of_dice:int,sides:int):
     for _ in range(number_of_dice):
         total += random.randint(1,sides)
     await interaction.response.send_message(f"Rolling {number_of_dice}d{sides}: {total}")
+
+@client.tree.command(name="callit",description="Call it.",guild=discord.Object(id=kinoplex_id))
+async def callit(interaction: discord.Interaction,call:str):
+    call = call.lower()
+    if call not in ["heads","tails"]:
+        await interaction.response.send_message("You have to call it, `heads` or `tails`, I can't do it for you.",ephemeral=True)
+        return
+    toss = random.randint(0,1)
+    if toss == 0:
+        result = "heads"
+    elif toss == 1:
+        result = "tails"
+    
+    await interaction.response.send_message(f"{interaction.user.mention} called {call}. The coin was ||`{result}`||")
 
 client.run(token)
