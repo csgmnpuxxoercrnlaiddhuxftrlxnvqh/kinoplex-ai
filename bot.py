@@ -3,6 +3,8 @@ import discord
 from discord import app_commands
 import random
 import json
+import re
+
 
 #open config
 with open("config.json","r") as f:
@@ -35,6 +37,12 @@ def checked(digits):
         return idx + 1
      if digit != digits[::-1][idx + 1]:
         return idx + 1
+
+def sanitize_string(string):
+    global kinoplex
+    pattern = r'<@\d+>'
+    output_string = re.sub(pattern,lambda match: kinoplex.get_member(int(match.group(0).split('@')[1][:-1])).name,string)
+    return output_string
 
 async def role_mod(user,emoji,side):
     global emojimap
@@ -76,8 +84,6 @@ async def on_ready():
     print(f"Loading commands")
     await tree.sync(guild=kinoplex)
     print(f"Commands loaded")
-    
-    print(kinoplex.emojis)
 
 @client.event
 async def on_raw_reaction_add(payload):
@@ -154,5 +160,13 @@ async def callit(interaction: discord.Interaction,call:str):
         result = "tails"
     
     await interaction.response.send_message(f"{interaction.user.mention} called {call}. The coin was ||`{result}`||")
+
+@client.tree.command(name="pick",description="Pick an option from a list. Comma separated.",guild=discord.Object(id=kinoplex_id))
+async def pick(interaction: discord.Interaction,comma_separated_values:str):
+    csv = sanitize_string(comma_separated_values)
+    vals = [x.rstrip() for x in csv[:128].split(",")]
+    choice = random.choice(vals)
+    msg = "Choices: " + ", ".join(vals) + f"\nPick: {choice}"
+    await interaction.response.send_message(msg)
 
 client.run(token)
