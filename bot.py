@@ -31,6 +31,9 @@ global kinoplex
 global emojimap
 global usermap
 
+#ask responses
+ask_responses = ["100%","Of course","Yes","Maybe","Impossible","No way","Don't think so","No","50/50","Robort is busy","I regret to inform you","Anon I..."]
+
 def checked(digits):
     for idx, digit in enumerate(reversed(digits)):
      if idx + 1 >= len(digits):
@@ -176,6 +179,13 @@ async def pick(interaction: discord.Interaction,comma_separated_values:str):
     vals = [x.rstrip() for x in csv[:128].split(",")]
     choice = random.choice(vals)
     msg = "Choices: " + ", ".join(vals) + f"\nPick: {choice}"
+    await interaction.response.send_message(msg)
+
+@client.tree.command(name="ask",description="Ask a question.",guild=discord.Object(id=kinoplex_id))
+async def ask(interaction: discord.Interaction,question:str):
+    question = sanitize_string(question)[:128]
+    answer = random.choice(ask_responses)
+    msg = "Question: " + question + "\nAnswer: " + answer
     await interaction.response.send_message(msg)
 
 client.run(token)
