@@ -41,7 +41,7 @@ def checked(digits):
 def sanitize_string(string):
     global kinoplex
     pattern = r'<@\d+>'
-    output_string = re.sub(pattern,lambda match: kinoplex.get_member(int(match.group(0).split('@')[1][:-1])).name,string)
+    output_string = re.sub(pattern,lambda match: kinoplex.get_member(int(match.group(0).split('@')[1][:-1])).display_name,string)
     return output_string
 
 async def role_mod(user,emoji,side):
