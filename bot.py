@@ -66,7 +66,6 @@ async def role_mod(user,emoji,side):
         print(f"User {user} removed their {emoji} reaction, removing role {role}")
         await user.remove_roles(role)
     
-
 @client.event
 async def on_ready():
     print(f'We have logged in as {client.user}')
@@ -94,6 +93,10 @@ async def on_ready():
     print(f"Loading commands")
     await tree.sync(guild=kinoplex)
     print(f"Commands loaded")
+
+    #set presence
+    game = discord.Game("Kinoplex Security Cameras")
+    await client.change_presence(status=discord.Status.online,activity=game)
 
 @client.event
 async def on_raw_reaction_add(payload):
