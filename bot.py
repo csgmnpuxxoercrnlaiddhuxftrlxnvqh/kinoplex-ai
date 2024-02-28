@@ -40,6 +40,13 @@ def checked(digits):
 
 def sanitize_string(string):
     global kinoplex
+    #remove big  formatting
+    string = re.sub('^#+','',string)
+    #remove code blocks
+    string = string.replace("`","")
+    #remove links
+    string = string.replace("https://","").replace("http://","")
+    #reformat mentions
     pattern = r'<@\d+>'
     output_string = re.sub(pattern,lambda match: kinoplex.get_member(int(match.group(0).split('@')[1][:-1])).display_name,string)
     return output_string
@@ -121,16 +128,18 @@ async def announce_showing(interaction: discord.Interaction, stream_title:str,st
         await interaction.response.send_message("Announcement posted!",ephemeral=True)
 
 @client.tree.command(name="roll",description="Roll a 4 digit number.",guild=discord.Object(id=kinoplex_id))
-async def roll(interaction: discord.Interaction):
+async def roll(interaction: discord.Interaction,message:str='🤖'):
     digits = "{:04d}".format(random.randint(0,9999))
     dubs = checked(digits)
+    if message != "🤖":
+        message = sanitize_string(message)[:64]
     if dubs > 1:
-        message = f"🤖: {digits[:len(digits) - dubs:]}**{digits[len(digits) - dubs::]}**"
+        msg = f"{message}: {digits[:len(digits) - dubs:]}**{digits[len(digits) - dubs::]}**"
         if dubs == 4:
-            message = "# " + message
+            msg = "# " + msg
     else:
-        message = f"🤖: {digits}"
-    await interaction.response.send_message(message)
+        msg = f"{message}: {digits}"
+    await interaction.response.send_message(msg)
 
 @client.tree.command(name="dice",description="Roll dice",guild=discord.Object(id=kinoplex_id))
 async def dice(interaction: discord.Interaction,number_of_dice:int,sides:int):
