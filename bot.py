@@ -138,7 +138,7 @@ async def roll(interaction: discord.Interaction,message:str='🤖'):
     digits = "{:04d}".format(random.randint(0,9999))
     dubs = checked(digits)
     if message != "🤖":
-        message = sanitize_string(message)[:64]
+        message = sanitize_string(message)[:128]
     if dubs > 1:
         msg = f"{message}: {digits[:len(digits) - dubs:]}**{digits[len(digits) - dubs::]}**"
         if dubs == 4:
