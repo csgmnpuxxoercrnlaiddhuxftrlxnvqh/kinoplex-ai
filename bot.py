@@ -179,7 +179,7 @@ async def callit(interaction: discord.Interaction,call:str):
 @client.tree.command(name="pick",description="Pick an option from a list. Comma separated.",guild=discord.Object(id=kinoplex_id))
 async def pick(interaction: discord.Interaction,comma_separated_values:str):
     csv = sanitize_string(comma_separated_values)
-    vals = [x.rstrip() for x in csv[:128].split(",")]
+    vals = [x.rstrip() for x in csv[:256].split(",")]
     choice = random.choice(vals)
     msg = "Choices: " + ", ".join(vals) + f"\nPick: {choice}"
     await interaction.response.send_message(msg)
