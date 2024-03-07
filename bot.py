@@ -23,16 +23,16 @@ class KinoplexAI(commands.Bot):
         intents = discord.Intents.default()
         intents.message_content = True
         intents.members = True
-        super().__init__(intents = intents, command_prefix= ".")
+        super().__init__(intents = intents, command_prefix= ".")    
+
+        self.owner_ids = self.config["admin_ids"]                   
+        self.bot_operators = self.config["bot_operators"]
+        self.activity = discord.Activity(type = discord.ActivityType.watching, name = self.config["presence"])
 
     def run(self):
         super().run(self.token)
     
     async def setup_hook(self):
-        self.owner_ids = self.config["admin_ids"]       #no clue why this wont work in __init__
-        self.bot_operators = self.config["bot_operators"]
-        
-        self.activity = discord.Activity(type = discord.ActivityType.watching, name = self.config["presence"])
 
         for extension in self.start_extensions:
             try:
