@@ -45,6 +45,7 @@ class Theaters(commands.Cog):
             role = discord.utils.get(self.bot.guild.roles, id = self.bot.usermap[str(user.id)])
             message = f"{role.mention} - User {user.mention} has scheduled a showing: `{stream_title}`, which starts in: `{starts_in}`.\n{self.bot.config['link_map'][str(user.id)]}"
             if schedule != '':
+                schedule = schedule.replace("\\n","\n")
                 message += " \nSchedule: `" + schedule + "`"
             theater_channel = discord.utils.get(self.bot.guild.channels, id=self.bot.config["announce_channels"]["theater"])
             await theater_channel.send(message)
