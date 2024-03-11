@@ -53,7 +53,7 @@ class Theaters(commands.Cog):
     #these are standard commands as to hide them from the / menu preventing clutter
     @commands.command(name = "add_default_react", aliases = ["adr"], hidden = True)
     async def add_default_react(self, ctx):
-        if ctx.author.id in self.bot.owner_ids or self.bot.bot_operators:
+        if ctx.author.id in self.bot.owner_ids or ctx.author.id in self.bot.bot_operators:
             channel = self.bot.get_channel(self.bot.config["role_channel"])
             message = await channel.fetch_message(self.bot.config["react_msgs"]["theater"])
             for emoji in self.bot.emojimap.keys():
@@ -63,7 +63,7 @@ class Theaters(commands.Cog):
     
     @commands.command(name= "remove_default_react", aliases = ["rdr"], hidden = True)
     async def remove_default_react(self, ctx):
-        if ctx.author.id in self.bot.owner_ids or self.bot.bot_operators:
+        if ctx.author.id in self.bot.owner_ids or ctx.author.id in self.bot.bot_operators:
             channel = self.bot.get_channel(self.bot.config["role_channel"])
             message = await channel.fetch_message(self.bot.config["react_msgs"]["theater"])
             for emoji in self.bot.emojimap.keys():

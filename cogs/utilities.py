@@ -10,7 +10,7 @@ class Utilities(commands.Cog):
 
     @commands.command(name = "sync", hidden = True)
     async def sync(self, ctx, arg = None): 
-        if ctx.author.id in self.bot.owner_ids or self.bot.bot_operators:
+        if ctx.author.id in self.bot.owner_ids or ctx.author.id in self.bot.bot_operators:
             print(f"Sync command issued by {ctx.author}")            
             if arg == "global":
                 await self.bot.tree.sync()
@@ -21,7 +21,7 @@ class Utilities(commands.Cog):
 
     @commands.command(name = "load_extension", aliases = ["l"], hidden = True)
     async def load_extension(self, ctx, extension_name: str):
-        if ctx.author.id in self.bot.owner_ids or self.bot.bot_operators:
+        if ctx.author.id in self.bot.owner_ids or ctx.author.id in self.bot.bot_operators:
             try:
                 await self.bot.load_extension(f"cogs.{extension_name}")
             except Exception:
@@ -32,7 +32,7 @@ class Utilities(commands.Cog):
 
     @commands.command(name = "unload_extension", aliases = ["u"], hidden = True)
     async def unload_extension(self, ctx, extension_name: str):
-        if ctx.author.id in self.bot.owner_ids or self.bot.bot_operators:
+        if ctx.author.id in self.bot.owner_ids or ctx.author.id in self.bot.bot_operators:
             if extension_name == "utilities":
                 await ctx.send(f"*The {extension_name} extension cannot be unloaded.*")
             else:
@@ -41,7 +41,7 @@ class Utilities(commands.Cog):
 
     @commands.command(name = "reload_extension", aliases = ["r"], hidden = True)
     async def reload_extension(self, ctx, extension_name: str):
-        if ctx.author.id in self.bot.owner_ids or self.bot.bot_operators:
+        if ctx.author.id in self.bot.owner_ids or ctx.author.id in self.bot.bot_operators:
             try:    
                 await self.bot.reload_extension(f"cogs.{extension_name}")
                 await ctx.send(f"Extension **{extension_name}** reloaded.")
@@ -51,7 +51,7 @@ class Utilities(commands.Cog):
     
     @commands.command(name = "reload_all", aliases = ["ra"], hidden = True)
     async def reload_all(self, ctx):
-        if ctx.author.id in self.bot.owner_ids or self.bot.bot_operators:
+        if ctx.author.id in self.bot.owner_ids or ctx.author.id in self.bot.bot_operators:
             for extension in self.bot.start_extensions:
                 if extension != "utilities":
                     try:
