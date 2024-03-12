@@ -32,7 +32,7 @@ class Tmdb(commands.Cog):
             description = response['overview'],
             color = discord.Color.dark_blue()
             )
-            embed.set_image(url = f"https://image.tmdb.org/t/p/w500/{response['poster_path']}")
+            embed.set_thumbnail(url = f"https://image.tmdb.org/t/p/w500/{response['poster_path']}")
             embed.add_field(name = "Rating", value = f"⭐ {response['vote_average']} out of 10 over {response['vote_count']} votes")
 
             return embed
@@ -41,6 +41,7 @@ class Tmdb(commands.Cog):
             return discord.Embed(description = f'An API error occurred: {raw_response.status_code}')
     
     @app_commands.command(name = "movie", description = "Search TMDB for a movie")
+    @app_commands.checks.cooldown(1,30)
     async def movie(self, interaction: discord.Interaction, title: str, year: str = None):
         params = {"query" : title }
         if year: params["year"] = year
@@ -52,6 +53,7 @@ class Tmdb(commands.Cog):
             await interaction.response.send_message(embed = embed)
     
     @app_commands.command(name = "show", description = "Search TMDB for a TV show")
+    @app_commands.checks.cooldown(1,30)
     async def show(self, interaction: discord.Interaction, title: str, year: str = None):
         params = {"query" : title}
         if year: params["year"] = year
@@ -62,6 +64,9 @@ class Tmdb(commands.Cog):
         else:
             await interaction.response.send_message(embed = embed)
     
+    async def cog_app_command_error(self, interaction: discord.Interaction, error):
+        if isinstance(error, app_commands.CommandOnCooldown):
+            await interaction.response.send_message(str(error), ephemeral = True)
 
 async def setup(bot):
      await bot.add_cog(Tmdb(bot), guild = discord.Object(id = bot.guild_id))

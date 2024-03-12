@@ -38,6 +38,7 @@ class Chat(commands.Cog):
     '''
         
     @app_commands.command(name = "roll",description = "Roll a 4 digit number.")
+    @app_commands.checks.cooldown(1,30)
     async def roll(self, interaction: discord.Interaction, message: str ='🤖'):
         digits = "{:04d}".format(random.randint(0,9999))
         dubs = self.checked(digits)
@@ -52,6 +53,7 @@ class Chat(commands.Cog):
         await interaction.response.send_message(msg)
 
     @app_commands.command(name = "dice",description = "Roll dice")
+    @app_commands.checks.cooldown(1,30)
     async def dice(self, interaction: discord.Interaction, number_of_dice: int, sides:int):
         total = 0
         if sides < 1:
@@ -67,6 +69,7 @@ class Chat(commands.Cog):
         await interaction.response.send_message(f"Rolling {number_of_dice}d{sides}: {total}")
 
     @app_commands.command(name = "callit",description = "Call it.")
+    @app_commands.checks.cooldown(1,30)
     async def callit(self, interaction: discord.Interaction, call: str):
         call = call.lower()
         if call not in ["heads", "tails"]:
@@ -80,6 +83,7 @@ class Chat(commands.Cog):
         await interaction.response.send_message(f"{interaction.user.mention} called {call}. The coin was ||`{result}`||")
 
     @app_commands.command(name= "pick", description= "Pick an option from a list. Comma separated.")
+    @app_commands.checks.cooldown(1,30)
     async def pick(self, interaction: discord.Interaction, comma_separated_values: str):
         csv = self.sanitize_string(comma_separated_values, self.bot.guild)
         vals = [x.rstrip() for x in csv[:256].split(",")]
@@ -88,11 +92,16 @@ class Chat(commands.Cog):
         await interaction.response.send_message(msg)
     
     @app_commands.command(name= "ask",description= "Ask a question.")
+    @app_commands.checks.cooldown(1,30)
     async def ask(self, interaction: discord.Interaction, question: str):
         question = self.sanitize_string(question, self.bot.guild)[:128]
         answer = random.choice(self.ask_responses)
         msg = "Question: " + question + "\nAnswer: " + answer
         await interaction.response.send_message(msg)
+
+    async def cog_app_command_error(self, interaction: discord.Interaction, error):
+        if isinstance(error, app_commands.CommandOnCooldown):
+            await interaction.response.send_message(str(error), ephemeral = True)
 
 async def setup(bot):
     await bot.add_cog(Chat(bot), guild = discord.Object(id = bot.guild_id)) #figure out how to reference the guild without the id
