@@ -32,7 +32,7 @@ class Tmdb(commands.Cog):
             description = response['overview'],
             color = discord.Color.dark_blue()
             )
-            embed.set_thumbnail(url = f"https://image.tmdb.org/t/p/w500/{response['poster_path']}")
+            embed.set_image(url = f"https://image.tmdb.org/t/p/w500/{response['poster_path']}")
             embed.add_field(name = "Rating", value = f"⭐ {response['vote_average']} out of 10 over {response['vote_count']} votes")
 
             return embed
