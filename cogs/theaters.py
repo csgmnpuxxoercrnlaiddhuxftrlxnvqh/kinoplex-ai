@@ -7,33 +7,37 @@ class Theaters(commands.Cog):
         self.bot = bot
 
     @staticmethod                                   #is this actually a static method?
-    async def role_mod(self, user, emoji, side):
-        if emoji not in self.bot.emojimap: return
-        role = discord.utils.get(self.bot.guild.roles, id=self.bot.emojimap[emoji])
+    async def role_mod(self, user, emoji_name, emoji_id, side):
+        if emoji_id == None:
+            emoji_id = emoji_name
+        if emoji_id not in self.bot.emojilist: return
+        role = discord.utils.get(self.bot.guild.roles, id=self.bot.rolemap[self.bot.emojilist.index(emoji_id)])
         if side == "add":
-            print(f"User {user} reacted with {emoji}, adding role {role}")
+            print(f"User {user} reacted with {emoji_name}, adding role {role}")
             await user.add_roles(role)
         elif side == "remove":
-            print(f"User {user} removed their {emoji} reaction, removing role {role}")
+            print(f"User {user} removed their {emoji_name} reaction, removing role {role}")
             await user.remove_roles(role)
     
     @commands.Cog.listener()  
     async def on_raw_reaction_add(self, payload):
         en = payload.emoji.name
+        eid = payload.emoji.id
         user = self.bot.guild.get_member(payload.user_id)
         if payload.message_id == self.bot.react_msg_theater:
             if payload.user_id in self.bot.owner_ids: 
                 return
-            await self.role_mod(self, user, en, "add")
+            await self.role_mod(self, user, en, eid, "add")
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
         en = payload.emoji.name
+        eid = payload.emoji.id
         user = self.bot.guild.get_member(payload.user_id)
         if payload.message_id == self.bot.react_msg_theater:
             if payload.user_id in self.bot.owner_ids: 
                 return
-            await self.role_mod(self, user, en, "remove")
+            await self.role_mod(self, user, en, eid, "remove")
 
     @app_commands.command(name="announce-showing",description="Ping people subscribed to the role for your channel.")
     async def announce_showing(self, interaction: discord.Interaction, stream_title:str, starts_in:str, schedule:str=''):
@@ -42,8 +46,9 @@ class Theaters(commands.Cog):
             await interaction.response.send_message(f"You are not a theater owner! Ask Robert if you'd like to become one.", ephemeral=True)
             return
         else:
-            role = discord.utils.get(self.bot.guild.roles, id = self.bot.usermap[str(user.id)])
-            message = f"{role.mention} - User {user.mention} has scheduled a showing: `{stream_title}`, which starts in: `{starts_in}`.\n{self.bot.config['link_map'][str(user.id)]}"
+            index = self.bot.usermap.index((str(user.id)))
+            role = discord.utils.get(self.bot.guild.roles, id = self.bot.rolemap[index])
+            message = f"{role.mention} - User {user.mention} has scheduled a showing: `{stream_title}`, which starts in: `{starts_in}`.\n{self.bot.config['link_map'][index]}"
             if schedule != '':
                 schedule = schedule.replace("\\n","\n")
                 message += " \nSchedule: `" + schedule + "`"
@@ -57,7 +62,7 @@ class Theaters(commands.Cog):
         if ctx.author.id in self.bot.owner_ids or ctx.author.id in self.bot.bot_operators:
             channel = self.bot.get_channel(self.bot.config["role_channel"])
             message = await channel.fetch_message(self.bot.config["react_msgs"]["theater"])
-            for emoji in self.bot.emojimap.keys():
+            for emoji in self.bot.emojimap:
                 await message.add_reaction(emoji)
         else:
             return
@@ -67,7 +72,7 @@ class Theaters(commands.Cog):
         if ctx.author.id in self.bot.owner_ids or ctx.author.id in self.bot.bot_operators:
             channel = self.bot.get_channel(self.bot.config["role_channel"])
             message = await channel.fetch_message(self.bot.config["react_msgs"]["theater"])
-            for emoji in self.bot.emojimap.keys():
+            for emoji in self.bot.emojimap:
                 await message.remove_reaction(emoji, self.bot.user)
         else:
             return

@@ -14,7 +14,10 @@ class KinoplexAI(commands.Bot):
         self.token = self.config["token"]
         self.guild_id = int(self.config["guild_id"])
         
-        self.emojimap = self.config["emoji_map"]
+        #this will be done later
+        self.emojilist = self.config["emoji_map"]
+        self.emojimap = []
+        self.rolemap = self.config["role_map"]
         self.usermap = self.config["user_map"]
         self.react_msg_theater = self.config['react_msgs']['theater']
         
@@ -46,6 +49,11 @@ class KinoplexAI(commands.Bot):
     async def on_ready(self):            
         self.guild = self.get_guild(self.guild_id)          #required AFTER connecting
         print(f"Connected to {self.guild} as {self.user.display_name}")
+        for emoji in self.emojilist:
+            emoji_obj = emoji
+            if isinstance(emoji,int):
+                emoji_obj = self.guild.get_emoji(emoji)
+            self.emojimap.append(emoji_obj)
 
 config_file = "config.json"
 bot = KinoplexAI(config_file)
