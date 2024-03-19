@@ -48,10 +48,10 @@ class Theaters(commands.Cog):
         else:
             index = self.bot.usermap.index((str(user.id)))
             role = discord.utils.get(self.bot.guild.roles, id = self.bot.rolemap[index])
-            message = f"{role.mention} - User {user.mention} has scheduled a showing: `{stream_title}`, which starts in: `{starts_in}`.\n{self.bot.config['link_map'][index]}"
+            message = f"{role.mention} - User {user.mention} has scheduled a showing: {stream_title}, which starts: {starts_in}.\n{self.bot.config['link_map'][index]}"
             if schedule != '':
                 schedule = schedule.replace("\\n","\n")
-                message += " \nSchedule: `" + schedule + "`"
+                message += " \nSchedule: \n" + schedule
             theater_channel = discord.utils.get(self.bot.guild.channels, id=self.bot.config["announce_channels"]["theater"])
             await theater_channel.send(message)
             await interaction.response.send_message("Announcement posted!", ephemeral=True)
