@@ -56,6 +56,35 @@ class Theaters(commands.Cog):
             await theater_channel.send(message)
             await interaction.response.send_message("Announcement posted!", ephemeral=True)
     
+    @app_commands.command(name="edit-showing",description="Edit an announced showing.")
+    async def edit_showing(self, interaction: discord.Interaction, message_id:str, stream_title:str, starts_in:str, schedule:str=''):
+        user = interaction.user
+        if str(user.id) not in self.bot.usermap:
+            await interaction.response.send_message(f"You are not a theater owner!", ephemeral=True)
+            return
+        else:
+            if not message_id.isdigit():
+                await interaction.response.send_message(f"Invalid message ID. Right click message and click 'Copy ID'",ephemeral=True)
+            message_id = int(message_id)
+            theater_channel = discord.utils.get(self.bot.guild.channels, id=self.bot.config["announce_channels"]["theater"])
+            try:
+                showing_message = await theater_channel.fetch_message(message_id)
+            except discord.NotFound:
+                await interaction.response.send_message(f"Announcement with that ID not found!",ephemeral=True)
+                return
+            msg_author_id = int(showing_message.content.split(" ")[3][2:-1])
+            if user.id != msg_author_id:
+                await interaction.response.send_message(f"You are not the author of that showing!",ephemeral=True)
+                return
+            index = self.bot.usermap.index((str(user.id)))
+            role = discord.utils.get(self.bot.guild.roles, id = self.bot.rolemap[index])
+            message = f"{role.mention} - User {user.mention} has scheduled a showing: {stream_title}, which starts: {starts_in}.\n{self.bot.config['link_map'][index]}"
+            if schedule != '':
+                schedule = schedule.replace("\\n","\n")
+                message += " \nSchedule: \n" + schedule
+            await showing_message.edit(content=message)
+            await interaction.response.send_message("Announcement edited!", ephemeral=True)
+
     #these are standard commands as to hide them from the / menu preventing clutter
     @commands.command(name = "add_default_react", aliases = ["adr"], hidden = True)
     async def add_default_react(self, ctx):
