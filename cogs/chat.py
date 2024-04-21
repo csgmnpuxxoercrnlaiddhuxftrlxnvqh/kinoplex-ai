@@ -40,8 +40,7 @@ class Chat(commands.Cog):
     @app_commands.command(name = "roll",description = "Roll a 4 digit number.")
     @app_commands.checks.cooldown(1,30)
     async def roll(self, interaction: discord.Interaction, message: str ='🤖'):
-        #digits = "{:04d}".format(random.randint(0,9999))
-        digits = "0420" #temp for 4/20
+        digits = "{:04d}".format(random.randint(0,9999))
         dubs = self.checked(digits)
         if message != "🤖":
             message = self.sanitize_string(message, self.bot.guild)[:128]
