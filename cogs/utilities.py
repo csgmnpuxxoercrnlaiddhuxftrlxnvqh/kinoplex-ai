@@ -60,6 +60,17 @@ class Utilities(commands.Cog):
                     except Exception:
                         await ctx.send(f"*Extension {extension} failed to load.*")
                         traceback.print_exc()
-        
+
+    @commands.command(name="nuke", hidden = True)
+    async def nuke(self,ctx, num_messages:int=5):
+        if ctx.author.id in self.bot.owner_ids or ctx.author.id in self.bot.bot_operators:
+            count = 0
+            async for message in ctx.history(limit=200):
+                if message.author.id == self.bot.user.id:
+                    count += 1
+                    await message.delete()
+                if count == num_messages or count > 50: # limit just in case
+                    break
+
 async def setup(bot):
     await bot.add_cog(Utilities(bot),  guild = discord.Object(id = bot.guild_id))

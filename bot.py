@@ -19,6 +19,7 @@ class KinoplexAI(commands.Bot):
         self.emojimap = []
         self.rolemap = self.config["role_map"]
         self.usermap = self.config["user_map"]
+        self.gamemap = self.config["game_map"]
         self.react_msg_theater = self.config['react_msgs']['theater']
         
         self.start_extensions = [x.stem for x in Path("cogs").glob("*.py")]
