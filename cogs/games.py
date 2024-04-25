@@ -31,7 +31,7 @@ class Games(commands.Cog):
         user = interaction.user
 
         if game_title not in self.bot.gamemap:
-            await interaction.response.send_message(f"To ping a game, re-send this command with one of the available ping roles in `game_title`. Case sensitive.\n\n- " + "\n- ".join(self.bot.gamemap.keys()),ephemeral=True)
+            await interaction.response.send_message(f"To ping a game, re-send this command with one of the roles from the list-games command.",ephemeral=True)
             return
         else:
             roles = [role.id for role in  user.roles]
@@ -55,6 +55,11 @@ class Games(commands.Cog):
         message = f"{game_role.mention} - User {user.mention} pinged for an event - {sanitized_msg}"
         await interaction.channel.send(message)
         await interaction.response.send_message("Event posted!")
+
+    @app_commands.command(name="list-games",description="List all game roles.")
+    async def list_games(self, interaction: discord.Interaction):
+        await interaction.response.send_message(f"**Game Roles:**\n\n- " + "\n- ".join(self.bot.gamemap.keys()),ephemeral=True)
+        return
 
 async def setup(bot):
     await bot.add_cog(Games(bot), guild = discord.Object(id = bot.guild_id))
