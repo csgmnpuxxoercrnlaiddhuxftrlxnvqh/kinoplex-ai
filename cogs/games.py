@@ -31,7 +31,7 @@ class Games(commands.Cog):
         user = interaction.user
 
         if game_title == '' or game_title not in self.bot.gamemap:
-            await interaction.response.send_message(f"To ping a game, type one of the available ping roles. Case sensitive.\n\n" + "\n".join(self.bot.gamemap.keys()),ephemeral=True)
+            await interaction.response.send_message(f"To ping a game, re-send this command with one of the available ping roles in `game_title`. Case sensitive.\n\n- " + "\n- ".join(self.bot.gamemap.keys()),ephemeral=True)
             return
         else:
             roles = [role.id for role in  user.roles]
