@@ -54,7 +54,7 @@ class Games(commands.Cog):
         sanitized_msg = self.sanitize_string(custom_msg,self.bot.guild)
         message = f"{game_role.mention} - User {user.mention} pinged for an event - {sanitized_msg}"
         await interaction.channel.send(message)
-        await interaction.response.send_message("Event posted!")
+        await interaction.response.send_message("Event posted!",ephemeral=True)
 
     @app_commands.command(name="list-games",description="List all game roles.")
     async def list_games(self, interaction: discord.Interaction):

@@ -3,6 +3,8 @@ from discord import app_commands
 from discord.ext import commands
 import random
 import re
+from PIL import Image
+import io
 
 class Chat(commands.Cog):
     ask_responses = ["100%","Of course","Yes","Maybe","Impossible","No way","Don't think so","No","50/50","Robort is busy","I regret to inform you","Anon I..."]
@@ -98,6 +100,38 @@ class Chat(commands.Cog):
         answer = random.choice(self.ask_responses)
         msg = "Question: " + question + "\nAnswer: " + answer
         await interaction.response.send_message(msg)
+
+    @commands.command(name= "blackbars",hidden=True)
+    @app_commands.checks.cooldown(1,5)
+    async def blackbar(self,ctx):
+        msg = ctx.message
+        if msg.attachments:
+            for attach in msg.attachments:
+                if "image" in attach.content_type:
+                    content = await attach.read()
+                    base_img = Image.open(io.BytesIO(content))
+                    
+                    width = base_img.width
+                    height = base_img.height
+                    if width / height < 64 / 27:
+                        width = int(height * 64 / 27)
+                    height = int(width * 9 / 16)
+
+                    new_img = Image.new('RGB', (width,height), 'black')
+
+                    x_offset = (width - base_img.width) // 2
+                    y_offset = (height - base_img.height) // 2
+
+                    new_img.paste(base_img, (int(x_offset),int(y_offset)))
+                    
+                    new_img = new_img.resize((1280,720))
+
+                    new_img_bytes = io.BytesIO()
+                    new_img.save(new_img_bytes, format='JPEG')
+                    new_img_bytes.seek(0)
+                    await msg.channel.send(file=discord.File(new_img_bytes, filename='black_bars.jpg'))
+                    break
+
 
     async def cog_app_command_error(self, interaction: discord.Interaction, error):
         if isinstance(error, app_commands.CommandOnCooldown):
