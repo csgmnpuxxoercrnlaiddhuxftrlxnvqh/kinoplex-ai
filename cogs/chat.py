@@ -101,39 +101,29 @@ class Chat(commands.Cog):
         msg = "Question: " + question + "\nAnswer: " + answer
         await interaction.response.send_message(msg)
 
-    @commands.command(name= "blackbars",hidden=True)
-    @commands.cooldown(1,180,type=discord.ext.commands.BucketType.user)
-    async def blackbar(self,ctx):
-        msg = ctx.message
-        if msg.attachments:
-            for attach in msg.attachments:
-                if "image" in attach.content_type:
-                    content = await attach.read()
-                    base_img = Image.open(io.BytesIO(content))
+    @app_commands.command(name= "blackbars",description="The cytube viewing experience")
+    @app_commands.checks.cooldown(1,180)
+    async def blackbar(self,interaction: discord.Interaction, file:discord.Attachment):
+        if "image" in file.content_type:
+            content = await file.read()
+            base_img = Image.open(io.BytesIO(content))
                    
-                    #resize happens first!
-                    base_img = base_img.resize((int(base_img.width*540/base_img.height),540))
+            #resize happens first!
+            base_img = base_img.resize((int(base_img.width*540/base_img.height),540))
 
-                    scale_factor = min(1280/base_img.width,540/base_img.height)
-                    
-                    base_img = base_img.resize((int(scale_factor * base_img.width),int(scale_factor * base_img.height)))
+            scale_factor = min(1280/base_img.width,540/base_img.height)
+            base_img = base_img.resize((int(scale_factor * base_img.width),int(scale_factor * base_img.height)))
 
-                    new_img = Image.new('RGB', (1280,720), 'black')
-
-                    x_offset = (1280 - base_img.width) // 2
-                    y_offset = (720 - base_img.height) // 2
-
-                    new_img.paste(base_img, (int(x_offset),int(y_offset)))
-
-                    new_img_bytes = io.BytesIO()
-                    new_img.save(new_img_bytes, format='JPEG')
-                    new_img_bytes.seek(0)
-                    await msg.channel.send(file=discord.File(new_img_bytes, filename='black_bars.jpg'))
-                    break
-
-    async def cog_app_command_error(self, interaction: discord.Interaction, error):
-        if isinstance(error, app_commands.CommandOnCooldown):
-            await interaction.response.send_message(str(error), ephemeral = True)
+            new_img = Image.new('RGB', (1280,720), 'black')
+            x_offset = (1280 - base_img.width) // 2
+            y_offset = (720 - base_img.height) // 2
+            new_img.paste(base_img, (int(x_offset),int(y_offset)))
+            new_img_bytes = io.BytesIO()
+            new_img.save(new_img_bytes, format='JPEG')
+            new_img_bytes.seek(0)
+            await interaction.response.send_message(file=discord.File(new_img_bytes, filename='black_bars.jpg'))
+        else:
+            await interaction.response.send_message("Send an image",ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(Chat(bot), guild = discord.Object(id = bot.guild_id)) #figure out how to reference the guild without the id
