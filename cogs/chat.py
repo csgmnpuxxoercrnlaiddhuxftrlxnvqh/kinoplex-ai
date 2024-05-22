@@ -102,7 +102,7 @@ class Chat(commands.Cog):
         await interaction.response.send_message(msg)
 
     @commands.command(name= "blackbars",hidden=True)
-    @app_commands.checks.cooldown(1,300)
+    @commands.cooldown(1,180,type=discord.ext.commands.BucketType.user)
     async def blackbar(self,ctx):
         msg = ctx.message
         if msg.attachments:
@@ -110,28 +110,26 @@ class Chat(commands.Cog):
                 if "image" in attach.content_type:
                     content = await attach.read()
                     base_img = Image.open(io.BytesIO(content))
+                   
+                    #resize happens first!
+                    base_img = base_img.resize((int(base_img.width*540/base_img.height),540))
+
+                    scale_factor = min(1280/base_img.width,540/base_img.height)
                     
-                    width = base_img.width
-                    height = base_img.height
-                    if width / height < 64 / 27:
-                        width = int(height * 64 / 27)
-                    height = int(width * 9 / 16)
+                    base_img = base_img.resize((int(scale_factor * base_img.width),int(scale_factor * base_img.height)))
 
-                    new_img = Image.new('RGB', (width,height), 'black')
+                    new_img = Image.new('RGB', (1280,720), 'black')
 
-                    x_offset = (width - base_img.width) // 2
-                    y_offset = (height - base_img.height) // 2
+                    x_offset = (1280 - base_img.width) // 2
+                    y_offset = (720 - base_img.height) // 2
 
                     new_img.paste(base_img, (int(x_offset),int(y_offset)))
-                    
-                    new_img = new_img.resize((1280,720))
 
                     new_img_bytes = io.BytesIO()
                     new_img.save(new_img_bytes, format='JPEG')
                     new_img_bytes.seek(0)
                     await msg.channel.send(file=discord.File(new_img_bytes, filename='black_bars.jpg'))
                     break
-
 
     async def cog_app_command_error(self, interaction: discord.Interaction, error):
         if isinstance(error, app_commands.CommandOnCooldown):
