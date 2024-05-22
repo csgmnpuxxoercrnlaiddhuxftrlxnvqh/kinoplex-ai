@@ -102,7 +102,7 @@ class Chat(commands.Cog):
         await interaction.response.send_message(msg)
 
     @commands.command(name= "blackbars",hidden=True)
-    @app_commands.checks.cooldown(1,5)
+    @app_commands.checks.cooldown(1,300)
     async def blackbar(self,ctx):
         msg = ctx.message
         if msg.attachments:
