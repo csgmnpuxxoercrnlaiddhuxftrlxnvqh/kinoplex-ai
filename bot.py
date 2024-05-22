@@ -17,9 +17,10 @@ class KinoplexAI(commands.Bot):
         #this will be done later
         self.emojilist = self.config["emoji_map"]
         self.emojimap = []
+        self.gameemojimap = []
         self.rolemap = self.config["role_map"]
         self.usermap = self.config["user_map"]
-        self.gamemap = self.config["game_map"]
+        self.gamedata = self.config["games"]
         self.react_msg_theater = self.config['react_msgs']['theater']
         
         self.start_extensions = [x.stem for x in Path("cogs").glob("*.py")]
@@ -55,6 +56,11 @@ class KinoplexAI(commands.Bot):
             if isinstance(emoji,int):
                 emoji_obj = self.guild.get_emoji(emoji)
             self.emojimap.append(emoji_obj)
+        for emoji in self.gamedata["emoji_map"]:
+            emoji_obj = emoji
+            if isinstance(emoji,int):
+                emoji_obj = self.guild.get_emoji(emoji)
+            self.gameemojimap.append(emoji_obj)
 
 config_file = "config.json"
 bot = KinoplexAI(config_file)

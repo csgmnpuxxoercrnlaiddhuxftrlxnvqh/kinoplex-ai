@@ -93,6 +93,10 @@ class Theaters(commands.Cog):
             message = await channel.fetch_message(self.bot.config["react_msgs"]["theater"])
             for emoji in self.bot.emojimap:
                 await message.add_reaction(emoji)
+            #for now, we just do the game reacts here too
+            gmessage = await channel.fetch_message(self.bot.gamedata["react_msg"])
+            for emoji in self.bot.gameemojimap:
+                await gmessage.add_reaction(emoji)
         else:
             return
     
@@ -103,6 +107,9 @@ class Theaters(commands.Cog):
             message = await channel.fetch_message(self.bot.config["react_msgs"]["theater"])
             for emoji in self.bot.emojimap:
                 await message.remove_reaction(emoji, self.bot.user)
+            gmessage = await channel.fetch_message(self.bot.gamedata["react_msg"])
+            for emoji in self.bot.gameemojimap:
+                await gmessage.remove_reaction(emoji, self.bot.user)
         else:
             return
 
