@@ -109,8 +109,6 @@ class Chat(commands.Cog):
             base_img = Image.open(io.BytesIO(content))
                    
             #resize happens first!
-            base_img = base_img.resize((int(base_img.width*540/base_img.height),540))
-
             scale_factor = min(1280/base_img.width,540/base_img.height)
             base_img = base_img.resize((int(scale_factor * base_img.width),int(scale_factor * base_img.height)))
 
