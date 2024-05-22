@@ -123,5 +123,9 @@ class Chat(commands.Cog):
         else:
             await interaction.response.send_message("Send an image",ephemeral=True)
 
+    async def cog_app_command_error(self, interaction: discord.Interaction, error):
+       if isinstance(error, app_commands.CommandOnCooldown):
+           await interaction.response.send_message(str(error), ephemeral = True) 
+
 async def setup(bot):
     await bot.add_cog(Chat(bot), guild = discord.Object(id = bot.guild_id)) #figure out how to reference the guild without the id
