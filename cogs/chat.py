@@ -42,6 +42,7 @@ class Chat(commands.Cog):
     @app_commands.command(name = "roll",description = "Roll a 4 digit number.")
     @app_commands.checks.cooldown(1,30)
     async def roll(self, interaction: discord.Interaction, message: str ='🤖'):
+        booburl = "https://files.catbox.moe/l3hixq.gif"
         digits = "{:04d}".format(random.randint(0,9999))
         dubs = self.checked(digits)
         if message != "🤖":
@@ -50,6 +51,8 @@ class Chat(commands.Cog):
             msg = f"{message}: {digits[:len(digits) - dubs:]}**{digits[len(digits) - dubs::]}**"
             if dubs == 4:
                 msg = "# " + msg
+        if digits == "8008":
+            msg = f"{message}:\n# [{digits}]({booburl})"
         else:
             msg = f"{message}: {digits}"
         await interaction.response.send_message(msg)
