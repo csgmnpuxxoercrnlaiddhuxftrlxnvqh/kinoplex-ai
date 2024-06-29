@@ -33,11 +33,12 @@ class Chat(commands.Cog):
         output_string = re.sub(pattern, lambda match: guild.get_member(int(match.group(0).split('@')[1][:-1])).display_name, string)
         return output_string
     
-    '''
+    
     @app_commands.command(name = "say", description = "Use the Kinoplex Loudspeaker.")
     async def say(self, interaction: discord.Interaction, message:str):
+        print(message)
         await interaction.response.send_message(self.sanitize_string(message, self.bot.guild))
-    '''
+    
         
     @app_commands.command(name = "roll",description = "Roll a 4 digit number.")
     @app_commands.checks.cooldown(1,30)
@@ -51,8 +52,8 @@ class Chat(commands.Cog):
             msg = f"{message}: {digits[:len(digits) - dubs:]}**{digits[len(digits) - dubs::]}**"
             if dubs == 4:
                 msg = "# " + msg
-        if digits == "8008":
-            msg = f"{message}:\n# [{digits}]({booburl})"
+        elif digits == "8008":
+            msg = f"# {message}: [{digits}]({booburl})"
         else:
             msg = f"{message}: {digits}"
         await interaction.response.send_message(msg)
