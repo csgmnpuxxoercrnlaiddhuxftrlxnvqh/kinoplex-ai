@@ -8,20 +8,15 @@ import traceback
 class KinoplexAI(commands.Bot):
     def __init__(self, config_file):
         self.config_file = config_file
-
+        self.starting = True
         with open(self.config_file) as f:
             self.config = json.load(f)
+
         self.token = self.config["token"]
-        self.guild_id = int(self.config["guild_id"])
+        self.guild_id = self.config["guild_id"]
         
-        #this will be done later
-        self.emojilist = self.config["emoji_map"]
-        self.emojimap = []
-        self.gameemojimap = []
-        self.rolemap = self.config["role_map"]
-        self.usermap = self.config["user_map"]
-        self.gamedata = self.config["games"]
-        self.react_msg_theater = self.config['react_msgs']['theater']
+        self.multiplexcfg = self.config["multiplex_config"]
+        self.gamecfg = self.config["game_config"]
         
         self.start_extensions = [x.stem for x in Path("cogs").glob("*.py")]
 
@@ -51,16 +46,44 @@ class KinoplexAI(commands.Bot):
     async def on_ready(self):            
         self.guild = self.get_guild(self.guild_id)          #required AFTER connecting
         print(f"Connected to {self.guild} as {self.user.display_name}")
-        for emoji in self.emojilist:
-            emoji_obj = emoji
-            if isinstance(emoji,int):
-                emoji_obj = self.guild.get_emoji(emoji)
-            self.emojimap.append(emoji_obj)
-        for emoji in self.gamedata["emoji_map"]:
-            emoji_obj = emoji
-            if isinstance(emoji,int):
-                emoji_obj = self.guild.get_emoji(emoji)
-            self.gameemojimap.append(emoji_obj)
+
+        #multiplex handling
+        self.mp_emoji_map = {}
+        self.mp_user_map = {}
+        for cfg in self.multiplexcfg["multiplexes"]:
+            emoji_obj = cfg["emoji"]
+            if isinstance(cfg["emoji"],int):
+                emoji_obj = self.guild.get_emoji(cfg["emoji"])
+
+            role = discord.utils.get(self.guild.roles, id=cfg["role"])
+
+            self.mp_emoji_map[cfg["emoji"]] = {"role":role,"obj":emoji_obj}
+
+            self.mp_user_map[cfg["user_id"]] = {"role":role,"link":cfg["channel_link"]}
+
+        self.multiplexcfg["role_channel"] = self.get_channel(self.multiplexcfg["role_channel"])
+        self.multiplexcfg["announce_channel"] = self.get_channel(self.multiplexcfg["announce_channel"])
+        self.multiplexcfg["react_msg"] = await self.multiplexcfg["role_channel"].fetch_message(self.multiplexcfg["react_msg"])
+
+        #game handling
+        self.game_emoji_map = {}
+        self.game_type_map = {}
+        for cfg in self.gamecfg["games"]:
+            emoji_obj = cfg["emoji"]
+            if isinstance(cfg["emoji"],int):
+                emoji_obj = self.guild.get_emoji(cfg["emoji"])
+
+            role = discord.utils.get(self.guild.roles, id=cfg["role"])
+
+            self.game_emoji_map[cfg["emoji"]] = {"role":role,"obj":emoji_obj}
+            self.game_type_map[cfg["type"]] = {"role":role}
+
+        self.gamecfg["role_channel"] = self.get_channel(self.gamecfg["role_channel"])
+        self.gamecfg["react_msg"] = await self.gamecfg["role_channel"].fetch_message(self.gamecfg["react_msg"])
+
+        print(f"Successfully loaded configs")
+        self.starting = False
+
 
 config_file = "config.json"
 bot = KinoplexAI(config_file)

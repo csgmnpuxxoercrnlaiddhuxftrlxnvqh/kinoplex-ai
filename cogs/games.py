@@ -30,12 +30,12 @@ class Games(commands.Cog):
     async def game_event(self, interaction: discord.Interaction, game_title:str,custom_msg:str):
         user = interaction.user
         gdata = self.bot.gamedata
-        if game_title not in gdata["name_map"]:
+        if game_title not in self.bot.game_type_map:
             await interaction.response.send_message(f"To ping a game, re-send this command with one of the roles from the list-games command.",ephemeral=True)
             return
         else:
-            roles = [role.id for role in  user.roles]
-            game_role = discord.utils.get(self.bot.guild.roles, id = gdata["role_map"][gdata["name_map"].index(game_title)])
+            roles = [role.id for role in user.roles]
+            game_role = self.bot.game_type_map[game_title]["role"]
             if game_role.id not in roles:
                 await interaction.response.send_message(f"You do not have the role for {game_title}.",ephemeral=True)
                 return
@@ -58,16 +58,15 @@ class Games(commands.Cog):
 
     @app_commands.command(name="list-games",description="List all game roles.")
     async def list_games(self, interaction: discord.Interaction):
-        await interaction.response.send_message(f"**Game Roles:**\n\n- " + "\n- ".join(self.bot.gamedata["name_map"]),ephemeral=True)
+        await interaction.response.send_message(f"**Game Roles:**\n\n- " + "\n- ".join(self.bot.game_type_map.keys()),ephemeral=True)
         return
 
     @staticmethod                                   #is this actually a static method?
     async def role_mod(self, user, emoji_name, emoji_id, side):
-        gdata = self.bot.gamedata
         if emoji_id == None:
             emoji_id = emoji_name
-        if emoji_id not in gdata["emoji_map"]: return
-        role = discord.utils.get(self.bot.guild.roles, id=gdata["role_map"][gdata["emoji_map"].index(emoji_id)])
+        if emoji_id not in self.bot.game_emoji_map: return
+        role = self.bot.game_emoji_map[emoji_id]["role"]
         if side == "add":
             print(f"User {user} reacted with {emoji_name}, adding role {role}")
             await user.add_roles(role)
@@ -77,20 +76,22 @@ class Games(commands.Cog):
     
     @commands.Cog.listener()  
     async def on_raw_reaction_add(self, payload):
+        if(self.bot.starting) return
         en = payload.emoji.name
         eid = payload.emoji.id
         user = self.bot.guild.get_member(payload.user_id)
-        if payload.message_id == self.bot.gamedata["react_msg"]:
+        if payload.message_id == self.bot.gamecfg["react_msg"].id:
             if payload.user_id in self.bot.owner_ids: 
                 return
             await self.role_mod(self, user, en, eid, "add")
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
+        if(self.bot.starting) return
         en = payload.emoji.name
         eid = payload.emoji.id
         user = self.bot.guild.get_member(payload.user_id)
-        if payload.message_id == self.bot.gamedata["react_msg"]:
+        if payload.message_id == self.bot.gamecfg["react_msg"].id:
             if payload.user_id in self.bot.owner_ids: 
                 return
             await self.role_mod(self, user, en, eid, "remove")
