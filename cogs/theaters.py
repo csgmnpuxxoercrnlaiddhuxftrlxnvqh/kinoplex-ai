@@ -21,7 +21,7 @@ class Theaters(commands.Cog):
     
     @commands.Cog.listener()  
     async def on_raw_reaction_add(self, payload):
-        if(self.bot.starting) return
+        if(self.bot.starting): return
         en = payload.emoji.name
         eid = payload.emoji.id
         user = self.bot.guild.get_member(payload.user_id)
@@ -32,7 +32,7 @@ class Theaters(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
-        if(self.bot.starting) return
+        if(self.bot.starting): return
         en = payload.emoji.name
         eid = payload.emoji.id
         user = self.bot.guild.get_member(payload.user_id)
@@ -42,7 +42,7 @@ class Theaters(commands.Cog):
             await self.role_mod(self, user, en, eid, "remove")
 
     @app_commands.command(name="announce-showing",description="Ping people subscribed to the role for your channel.")
-    async def announce_showing(self, interaction: discord.Interaction, stream_title:str, starts_in:str, schedule:str=''):
+    async def announce_showing(self, interaction: discord.Interaction, stream_title:str, starts_in:str, schedule:str='',file:discord.Attachment=None):
         user = interaction.user
         if user.id not in self.bot.mp_user_map:
             await interaction.response.send_message(f"You are not a theater owner! Ask Robert if you'd like to become one.", ephemeral=True)
@@ -54,11 +54,15 @@ class Theaters(commands.Cog):
                 schedule = schedule.replace("\\n","\n")
                 message += " \nSchedule: \n" + schedule
             theater_channel = self.bot.multiplexcfg["announce_channel"]
-            await theater_channel.send(message)
+            attachments = []
+            if file:
+                file_attachment = await file.to_file()
+                attachments.append(file_attachment)
+            await theater_channel.send(content=message,files=attachments)
             await interaction.response.send_message("Announcement posted!", ephemeral=True)
     
     @app_commands.command(name="edit-showing",description="Edit an announced showing.")
-    async def edit_showing(self, interaction: discord.Interaction, message_id:str, stream_title:str, starts_in:str, schedule:str=''):
+    async def edit_showing(self, interaction: discord.Interaction, message_id:str, stream_title:str, starts_in:str, schedule:str='',file:discord.Attachment=None):
         user = interaction.user
         if user.id not in self.bot.mp_user_map:
             await interaction.response.send_message(f"You are not a theater owner!", ephemeral=True)
@@ -82,7 +86,14 @@ class Theaters(commands.Cog):
             if schedule != '':
                 schedule = schedule.replace("\\n","\n")
                 message += " \nSchedule: \n" + schedule
-            await showing_message.edit(content=message)
+            attachments = []
+            if file:
+                if message.attachments:
+                    file_attachment = await file.to_file()
+                    attachments.append(file_attachment)
+                else:
+                    await interaction.response.send_message(f"Can't add attachments to an announcement without any. Only pass the attachments an announcement already has.",ephemeral=True)
+            await showing_message.edit(content=message,attachments=attachments)
             await interaction.response.send_message("Announcement edited!", ephemeral=True)
 
     #these are standard commands as to hide them from the / menu preventing clutter

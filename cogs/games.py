@@ -76,7 +76,7 @@ class Games(commands.Cog):
     
     @commands.Cog.listener()  
     async def on_raw_reaction_add(self, payload):
-        if(self.bot.starting) return
+        if(self.bot.starting): return
         en = payload.emoji.name
         eid = payload.emoji.id
         user = self.bot.guild.get_member(payload.user_id)
@@ -87,7 +87,7 @@ class Games(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
-        if(self.bot.starting) return
+        if(self.bot.starting): return
         en = payload.emoji.name
         eid = payload.emoji.id
         user = self.bot.guild.get_member(payload.user_id)
