@@ -88,11 +88,8 @@ class Theaters(commands.Cog):
                 message += " \nSchedule: \n" + schedule
             attachments = []
             if file:
-                if message.attachments:
-                    file_attachment = await file.to_file()
-                    attachments.append(file_attachment)
-                else:
-                    await interaction.response.send_message(f"Can't add attachments to an announcement without any. Only pass the attachments an announcement already has.",ephemeral=True)
+                file_attachment = await file.to_file()
+                attachments.append(file_attachment)
             await showing_message.edit(content=message,attachments=attachments)
             await interaction.response.send_message("Announcement edited!", ephemeral=True)
 
