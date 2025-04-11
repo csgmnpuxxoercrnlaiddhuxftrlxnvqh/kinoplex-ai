@@ -11,6 +11,9 @@ class Theaters(commands.Cog):
         if emoji_id == None:
             emoji_id = emoji_name
         if emoji_id not in self.bot.mp_emoji_map: return
+
+        if(self.bot.mp_emoji_map[emoji_id]["role"] is None):
+            self.bot.mp_emoji_map[emoji_id]["role"] = discord.utils.get(self.bot.guild.roles, id=self.bot.mp_emoji_map[emoji_id]["role_id"])
         role = self.bot.mp_emoji_map[emoji_id]["role"]
         if side == "add":
             print(f"User {user} reacted with {emoji_name}, adding role {role}")
@@ -25,7 +28,11 @@ class Theaters(commands.Cog):
         en = payload.emoji.name
         eid = payload.emoji.id
         user = self.bot.guild.get_member(payload.user_id)
-        if payload.message_id == self.bot.multiplexcfg["react_msg"].id:
+        if (self.bot.multiplexcfg["react_message"] is None):
+            if(self.bot.multiplexcfg["emote_role_channel"] is None):
+                self.bot.multiplexcfg["emote_role_channel"] = self.bot.get_channel(self.bot.multiplexcfg["role_channel"])
+            self.bot.multiplexcfg["react_message"] = await self.bot.multiplexcfg["emote_role_channel"].fetch_message(self.bot.multiplexcfg["react_msg"])
+        if payload.message_id == self.bot.multiplexcfg["react_message"].id:
             if payload.user_id in self.bot.owner_ids: 
                 return
             await self.role_mod(self, user, en, eid, "add")
@@ -36,7 +43,11 @@ class Theaters(commands.Cog):
         en = payload.emoji.name
         eid = payload.emoji.id
         user = self.bot.guild.get_member(payload.user_id)
-        if payload.message_id == self.bot.multiplexcfg["react_msg"].id:
+        if (self.bot.multiplexcfg["react_message"] is None):
+            if(self.bot.multiplexcfg["emote_role_channel"] is None):
+                self.bot.multiplexcfg["emote_role_channel"] = self.bot.get_channel(self.bot.multiplexcfg["role_channel"])
+            self.bot.multiplexcfg["react_message"] = await self.bot.multiplexcfg["emote_role_channel"].fetch_message(self.bot.multiplexcfg["react_msg"])
+        if payload.message_id == self.bot.multiplexcfg["react_message"].id:
             if payload.user_id in self.bot.owner_ids: 
                 return
             await self.role_mod(self, user, en, eid, "remove")
@@ -48,12 +59,16 @@ class Theaters(commands.Cog):
             await interaction.response.send_message(f"You are not a theater owner! Ask Robert if you'd like to become one.", ephemeral=True)
             return
         else:
+            if(self.bot.mp_user_map[user.id]["role"] is None):
+                self.bot.mp_user_map[user.id]["role"] = discord.utils.get(self.bot.guild.roles, id=self.bot.mp_user_map[user.id]["role_id"])
             role = self.bot.mp_user_map[user.id]["role"]
             message = f"{role.mention} - User {user.mention} has scheduled a showing: {stream_title}, which starts: {starts_in}.\n{self.bot.mp_user_map[user.id]['link']}"
             if schedule != '':
                 schedule = schedule.replace("\\n","\n")
                 message += " \nSchedule: \n" + schedule
-            theater_channel = self.bot.multiplexcfg["announce_channel"]
+            if(self.bot.multiplexcfg["announcement_channel"] is None):
+                self.bot.multiplexcfg["announcement_channel"] = self.bot.get_channel(self.bot.multiplexcfg["announce_channel"])
+            theater_channel = self.bot.multiplexcfg["announcement_channel"]
             attachments = []
             if file:
                 file_attachment = await file.to_file()
@@ -71,7 +86,9 @@ class Theaters(commands.Cog):
             if not message_id.isdigit():
                 await interaction.response.send_message(f"Invalid message ID. Right click message and click 'Copy ID'",ephemeral=True)
             message_id = int(message_id)
-            theater_channel = self.bot.multiplexcfg["announce_channel"]
+            if(self.bot.multiplexcfg["announcement_channel"] is None):
+                self.bot.multiplexcfg["announcement_channel"] = self.bot.get_channel(self.bot.multiplexcfg["announce_channel"])
+            theater_channel = self.bot.multiplexcfg["announcement_channel"]
             try:
                 showing_message = await theater_channel.fetch_message(message_id)
             except discord.NotFound:
@@ -81,6 +98,8 @@ class Theaters(commands.Cog):
             if user.id != msg_author_id:
                 await interaction.response.send_message(f"You are not the author of that showing!",ephemeral=True)
                 return
+            if(self.bot.mp_user_map[user.id]["role"] is None):
+                self.bot.mp_user_map[user.id]["role"] = discord.utils.get(self.bot.guild.roles, id=self.bot.mp_user_map[user.id]["role_id"])
             role = self.bot.mp_user_map[user.id]["role"]
             message = f"{role.mention} - User {user.mention} has scheduled a showing: {stream_title}, which starts: {starts_in}.\n{self.bot.mp_user_map[user.id]['link']}"
             if schedule != '':
@@ -98,14 +117,26 @@ class Theaters(commands.Cog):
     async def add_default_react(self, ctx):
         if ctx.author.id in self.bot.owner_ids or ctx.author.id in self.bot.bot_operators:
 
-            message = self.bot.multiplexcfg["react_msg"]
-            for emoji in self.bot.mp_emoji_map:
-                await message.add_reaction(emoji["obj"])
+            if (self.bot.multiplexcfg["react_message"] is None):
+                if(self.bot.multiplexcfg["emote_role_channel"] is None):
+                    self.bot.multiplexcfg["emote_role_channel"] = self.bot.get_channel(self.bot.multiplexcfg["role_channel"])
+                self.bot.multiplexcfg["react_message"] = await self.bot.multiplexcfg["emote_role_channel"].fetch_message(self.bot.multiplexcfg["react_msg"])
+            message = self.bot.multiplexcfg["react_message"]
+            for emoji,data in self.bot.mp_emoji_map.items():
+                if(data["obj"] is None):
+                    data["obj"] = self.bot.guild.get_emoji(emoji)
+                await message.add_reaction(data["obj"])
 
             #for now, we just do the game reacts here too
-            gmessage = self.bot.gamecfg["react_msg"]
-            for emoji in self.bot.game_emoji_map:
-                await gmessage.add_reaction(emoji["obj"])
+            if (self.bot.gamecfg["react_message"] is None):
+                if(self.bot.gamecfg["emote_role_channel"] is None):
+                    self.bot.gamecfg["emote_role_channel"] = self.bot.get_channel(self.bot.gamecfg["role_channel"])
+                self.bot.gamecfg["react_message"] = await self.bot.gamecfg["emote_role_channel"].fetch_message(self.bot.gamecfg["react_msg"])
+            gmessage = self.bot.gamecfg["react_message"]
+            for emoji,data in self.bot.game_emoji_map.items():
+                if(data["obj"] is None):
+                    data["obj"] = self.bot.guild.get_emoji(emoji)
+                await gmessage.add_reaction(data["obj"])
         else:
             return
     
@@ -113,13 +144,25 @@ class Theaters(commands.Cog):
     async def remove_default_react(self, ctx):
         if ctx.author.id in self.bot.owner_ids or ctx.author.id in self.bot.bot_operators:
 
-            message = self.bot.multiplexcfg["react_msg"]
-            for emoji in self.bot.mp_emoji_map:
-                await message.remove_reaction(emoji["obj"], self.bot.user)
+            if (self.bot.multiplexcfg["react_message"] is None):
+                if(self.bot.multiplexcfg["emote_role_channel"] is None):
+                    self.bot.multiplexcfg["emote_role_channel"] = self.bot.get_channel(self.bot.multiplexcfg["role_channel"])
+                self.bot.multiplexcfg["react_message"] = await self.bot.multiplexcfg["emote_role_channel"].fetch_message(self.bot.multiplexcfg["react_msg"])
+            message = self.bot.multiplexcfg["react_message"]
+            for emoji,data in self.bot.mp_emoji_map.items():
+                if(data["obj"] is None):
+                    data["obj"] = self.bot.guild.get_emoji(emoji)
+                await message.remove_reaction(data["obj"], self.bot.user)
                 
-            gmessage = self.bot.gamecfg["react_msg"]
-            for emoji in self.bot.game_emoji_map:
-                await gmessage.remove_reaction(emoji["obj"], self.bot.user)
+            if (self.bot.gamecfg["react_message"] is None):
+                if(self.bot.gamecfg["emote_role_channel"] is None):
+                    self.bot.gamecfg["emote_role_channel"] = self.bot.get_channel(self.bot.gamecfg["role_channel"])
+                self.bot.gamecfg["react_message"] = await self.bot.gamecfg["emote_role_channel"].fetch_message(self.bot.gamecfg["react_msg"])
+            gmessage = self.bot.gamecfg["react_message"]
+            for emoji,data in self.bot.game_emoji_map.items():
+                if(data["obj"] is None):
+                    data["obj"] = self.bot.guild.get_emoji(emoji)
+                await gmessage.remove_reaction(data["obj"], self.bot.user)
         else:
             return
 

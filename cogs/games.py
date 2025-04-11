@@ -35,6 +35,8 @@ class Games(commands.Cog):
             return
         else:
             roles = [role.id for role in user.roles]
+            if(self.bot.game_type_map[game_title]["role"] is None):
+                self.bot.game_type_map[game_title]["role"] = discord.utils.get(self.bot.guild.roles, id=self.bot.game_type_map[game_title]["role_id"])
             game_role = self.bot.game_type_map[game_title]["role"]
             if game_role.id not in roles:
                 await interaction.response.send_message(f"You do not have the role for {game_title}.",ephemeral=True)
@@ -66,6 +68,9 @@ class Games(commands.Cog):
         if emoji_id == None:
             emoji_id = emoji_name
         if emoji_id not in self.bot.game_emoji_map: return
+
+        if(self.bot.game_emoji_map[emoji_id]["role"] is None):
+            self.bot.game_emoji_map[emoji_id]["role"] = discord.utils.get(self.bot.guild.roles, id=self.bot.game_emoji_map[emoji_id]["role_id"])
         role = self.bot.game_emoji_map[emoji_id]["role"]
         if side == "add":
             print(f"User {user} reacted with {emoji_name}, adding role {role}")
@@ -80,7 +85,11 @@ class Games(commands.Cog):
         en = payload.emoji.name
         eid = payload.emoji.id
         user = self.bot.guild.get_member(payload.user_id)
-        if payload.message_id == self.bot.gamecfg["react_msg"].id:
+        if (self.bot.gamecfg["react_message"] is None):
+            if(self.bot.gamecfg["emote_role_channel"] is None):
+                self.bot.gamecfg["emote_role_channel"] = self.bot.get_channel(self.bot.gamecfg["role_channel"])
+            self.bot.gamecfg["react_message"] = await self.bot.gamecfg["emote_role_channel"].fetch_message(self.bot.gamecfg["react_msg"])
+        if payload.message_id == self.bot.gamecfg["react_message"].id:
             if payload.user_id in self.bot.owner_ids: 
                 return
             await self.role_mod(self, user, en, eid, "add")
@@ -91,7 +100,11 @@ class Games(commands.Cog):
         en = payload.emoji.name
         eid = payload.emoji.id
         user = self.bot.guild.get_member(payload.user_id)
-        if payload.message_id == self.bot.gamecfg["react_msg"].id:
+        if (self.bot.gamecfg["react_message"] is None):
+            if(self.bot.gamecfg["emote_role_channel"] is None):
+                self.bot.gamecfg["emote_role_channel"] = self.bot.get_channel(self.bot.gamecfg["role_channel"])
+            self.bot.gamecfg["react_message"] = await self.bot.gamecfg["emote_role_channel"].fetch_message(self.bot.gamecfg["react_msg"])
+        if payload.message_id == self.bot.gamecfg["react_message"].id:
             if payload.user_id in self.bot.owner_ids: 
                 return
             await self.role_mod(self, user, en, eid, "remove")
