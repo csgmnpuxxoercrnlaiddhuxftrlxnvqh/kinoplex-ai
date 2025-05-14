@@ -29,7 +29,6 @@ class Games(commands.Cog):
     @app_commands.command(name="game-event",description="Ping people with a specific game role.")
     async def game_event(self, interaction: discord.Interaction, game_title:str,custom_msg:str):
         user = interaction.user
-        gdata = self.bot.gamedata
         if game_title not in self.bot.game_type_map:
             await interaction.response.send_message(f"To ping a game, re-send this command with one of the roles from the list-games command.",ephemeral=True)
             return
