@@ -56,7 +56,8 @@ class Chat(commands.Cog):
             msg = f"# {message}: [{digits}]({booburl})"
         else:
             msg = f"{message}: {digits}"
-        await interaction.response.send_message(msg)
+
+        await interaction.response.send_message(msg, ephemeral = False)#(True if (interaction.user.id == 245677906993348608 and dubs == 3) else False))
 
     @app_commands.command(name = "dice",description = "Roll dice")
     @app_commands.checks.cooldown(1,30)
@@ -64,8 +65,8 @@ class Chat(commands.Cog):
         total = 0
         if sides < 1:
             sides = 1
-        if sides > 100:
-            sides = 100
+        if sides > 10000:
+            sides = 10000
         if number_of_dice > 1000:
             number_of_dice = 1000
         if number_of_dice < 1:

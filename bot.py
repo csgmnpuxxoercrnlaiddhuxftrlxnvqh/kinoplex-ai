@@ -3,7 +3,20 @@ import json
 import discord
 from discord.ext import commands
 import traceback
+import threading
+import asyncio
 
+def input_loop(bot):
+    while True:
+        try:
+            msg = input("Message to send: ")
+            if msg:
+                coro = bot.mainchannel.send(content=msg)
+                asyncio.run_coroutine_threadsafe(coro, bot.loop)
+        except KeyboardInterrupt:
+            print("Interrupted.")
+            asyncio.run_coroutine_threadsafe(bot.close(), bot.loop)
+            break
 
 class KinoplexAI(commands.Bot):
     def __init__(self, config_file):
@@ -17,6 +30,7 @@ class KinoplexAI(commands.Bot):
         
         self.multiplexcfg = self.config["multiplex_config"]
         self.gamecfg = self.config["game_config"]
+        self.main_channel = self.config["main_channel"]
         
         self.start_extensions = [x.stem for x in Path("cogs").glob("*.py")]
 
@@ -80,10 +94,12 @@ class KinoplexAI(commands.Bot):
 
         self.gamecfg["emote_role_channel"] = self.get_channel(self.gamecfg["role_channel"])
         self.gamecfg["react_message"] = await self.gamecfg["emote_role_channel"].fetch_message(self.gamecfg["react_msg"])
+        self.mainchannel = self.get_channel(self.main_channel)
 
         print(f"Successfully loaded configs")
         self.starting = False
 
+        threading.Thread(target=input_loop, args=(self,), daemon=True).start()
 
 config_file = "config.json"
 bot = KinoplexAI(config_file)
