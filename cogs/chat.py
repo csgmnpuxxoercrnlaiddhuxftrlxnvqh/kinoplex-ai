@@ -33,6 +33,28 @@ class Chat(commands.Cog):
         output_string = re.sub(pattern, lambda match: guild.get_member(int(match.group(0).split('@')[1][:-1])).display_name, string)
         return output_string
     
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message):        
+        if "CHD" in message.content:
+            try:
+                patriot = self.bot.guild.get_emoji(1390866700576100402)
+                badtothebone = self.bot.guild.get_emoji(1279909710119833620)
+                await message.add_reaction(patriot)
+                await message.add_reaction(badtothebone)
+            except Exception as e:
+                print(f"Failed to add CHD reactions: {e}")
+        if "BMC" in message.content:
+            try:
+                patriot = self.bot.guild.get_emoji(1390866700576100402)
+                await message.add_reaction("🎅")
+                await message.add_reaction("🎄")
+                await message.add_reaction(patriot)
+            except Exception as e:
+                print(f"Failed to add BMC reactions: {e}")
+        if any(role.id == 946874613948874752 for role in message.author.roles):
+            if message.author.id != 920564427563081758:
+                if random.randint(0,100)== 0:
+                    await message.add_reaction("🏳️‍⚧️")
     
     @app_commands.command(name = "say", description = "Use the Kinoplex Loudspeaker.")
     async def say(self, interaction: discord.Interaction, message:str):
