@@ -51,15 +51,19 @@ class Chat(commands.Cog):
                 await message.add_reaction(patriot)
             except Exception as e:
                 print(f"Failed to add BMC reactions: {e}")
-        if any(role.id == 946874613948874752 for role in message.author.roles):
-            if message.author.id != 920564427563081758:
-                if random.randint(0,100)== 0:
-                    await message.add_reaction("🏳️‍⚧️")
+        if isinstance(message.author, discord.Member):
+            if any(role.id == 946874613948874752 for role in message.author.roles):
+                if message.author.id != 920564427563081758:
+                    if random.randint(0,100)== 0:
+                        await message.add_reaction("🏳️‍⚧️")
     
     @app_commands.command(name = "say", description = "Use the Kinoplex Loudspeaker.")
-    async def say(self, interaction: discord.Interaction, message:str):
-        print(message)
-        await interaction.response.send_message(self.sanitize_string(message, self.bot.guild))
+    async def say(self, interaction: discord.Interaction, message:str, file:discord.Attachment=None):
+        attachments = []
+        if file:
+            file_attachment = await file.to_file()
+            attachments.append(file_attachment)
+        await interaction.response.send_message(content=self.sanitize_string(message, self.bot.guild),files=attachments)
     
         
     @app_commands.command(name = "roll",description = "Roll a 4 digit number.")

@@ -1,0 +1,238 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+def get_emotes(channel):
+	def extract_emote_list(text):
+		try:
+			text = text.split('\x1E42["emoteList",')[1]
+			return json.loads(text.partition("]\x1E42")[0])
+		except Exception as e:
+			print(f"Error extracting {channel} emote list: {e}")
+			return []
+
+
+	def generateSocketTimestamp():
+		alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_"
+		now = int(time.time() * 1000)
+		encoded = ""
+		
+		while True:
+			encoded = alphabet[now % 64] + encoded
+			now //= 64
+			if now <= 0: break
+		return encoded
+
+
+
+	get_time = lambda: str(int(time.time() * 1000))
+	params = {
+		"EIO": "4",
+		"transport": "polling",
+		"t": generateSocketTimestamp()
+	}
+
+
+
+
+	try:
+		socket_url = (session := requests.Session()).get(f"https://cytu.be/socketconfig/{channel}.json").json()["servers"][0]["url"] + "/socket.io/"
+		handshake = session.get(socket_url, params=params)
+		params["sid"] = json.loads(handshake.text[1:])["sid"]
+
+
+		session.post(socket_url, params=params, data="40")
+		session.post(socket_url, params=params, data="42" + json.dumps(["joinChannel", {"name": channel}]))
+		response = session.get(socket_url, params=params)
+	except Exception as e:
+		print(f"Error connecting to {channel} socket: {e}")
+		return []
+
+	return extract_emote_list(response.text)
+
+
+
+
+
+
+CYTUBE_EMOTES = get_emotes("the-kinoplex")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def make_caption(img_url, text):
+	with Image.open(urlopen(img_url)) as img:
+		draw = ImageDraw.Draw(img)
+		img_width, img_height = img.size
+
+
+		font_size = int(img_width / 10)
+		font = ImageFont.truetype("caption.otf", font_size)
+
+
+
+
+
+		# wrap text manually
+		text_max_width = img_width - int(img_width / 25) * 2
+		lines = []
+		words = text.split()
+		current_line = ""
+
+		measure_line = lambda text: draw.textbbox((0, 0), text, font=font)
+
+
+		for i, word in enumerate(words):
+			line = f"{current_line + (' ' if i else '')}{word}"
+
+			if draw.textlength(line, font=font) <= text_max_width:
+				current_line = line
+			else:
+				l, t, r, b = measure_line(current_line)
+				lines.append({"text": current_line, "top": t, "bot": b, "width": r - l})
+				current_line = word
+			if i == len(words) - 1: 
+				l, t, r, b = measure_line(current_line)
+				lines.append({"text": current_line, "top": t, "bot": b, "width": r - l})
+
+
+
+		
+
+
+
+
+		line_spacing = font_size * 1.2
+
+		first_half = (lines[0]["bot"] - lines[0]["top"]) / 2
+		last_half = (lines[-1]["bot"] - lines[-1]["top"]) / 2
+
+		ascent, descent = font.getmetrics()
+		y_start = (ascent + descent) / 2 - lines[0]["top"]
+		total_text_height = int(first_half + (line_spacing * (len(lines) - 1)) + last_half)
+		area_height = total_text_height + font_size
+
+
+
+
+		caption_img = Image.new("RGB", (img_width, area_height), "white")
+		caption_draw = ImageDraw.Draw(caption_img)
+ 		
+
+		y = (area_height - total_text_height) / 2 + y_start
+		for i, line in enumerate(lines):
+			x = (img_width - line["width"]) / 2
+			caption_draw.text((x, y), line["text"], font=font, fill="black", anchor="lm")
+			y += line_spacing
+
+
+
+
+
+
+		buffer = BytesIO()
+		img_format = "PNG"
+		if not getattr(img, "is_animated", False):
+
+			final_img = Image.new("RGBA", (img_width, img_height + area_height))
+			final_img.paste(caption_img, (0, 0))
+			final_img.paste(img, (0, area_height))
+			final_img.save(buffer, format=img_format)
+
+		
+		else:
+			frames = []
+			durations = []
+			for frame in ImageSequence.Iterator(img):
+				final_frame = Image.new("RGBA", (img_width, img_height + area_height))
+
+				final_frame.paste(caption_img, (0, 0))
+				final_frame.paste(frame.convert("RGBA"), (0, area_height))
+
+
+
+				if final_frame.getextrema()[3][0] == 255:
+					final_frame = final_frame.convert("RGB").convert("P", palette=Image.ADAPTIVE, colors=256, dither=0)
+				else:
+					alpha = final_frame.getchannel("A")
+					final_frame = final_frame.convert("RGB").convert("P", palette=Image.ADAPTIVE, colors=255, dither=0)
+
+					mask = Image.eval(alpha, lambda a: 255 if a <= 128 else 0)
+					final_frame.paste(255, mask)
+					final_frame.info["transparency"] = 255
+					final_frame.info["disposal"] = frame.info.get("disposal", 2)
+
+
+				frames.append(final_frame)
+				durations.append(frame.info.get("duration", 100))
+
+
+
+			img_format = "GIF"
+			frames[0].save(
+				buffer,
+				format=img_format,
+				save_all=True,
+				append_images=frames[1:],
+				loop=img.info.get("loop", 0),
+				duration=durations,
+				optimize=True
+			)
+
+
+
+		buffer.seek(0)
+		return (buffer, img_format.lower())
+
+
+
+
+
+
+
+
+
+
+
+
+
+@bot.tree.command(name="sm")
+async def sm_command(ctx: discord.Interaction, caption: str=None):
+	await ctx.response.defer(ephemeral=False)
+	while (emote := random.choice(CYTUBE_EMOTES))["name"].startswith(("fx", "ov")): pass
+
+	if caption: img_buffer, ext = make_caption(emote["image"], caption)
+	else:
+		with urlopen(emote["image"]) as r:
+			img_buffer = BytesIO(r.read())
+			ext = emote["image"].split(".")[-1].lower()
+
+
+	await ctx.followup.send(file=discord.File(img_buffer, filename=f"{emote['name']}.{ext}"))

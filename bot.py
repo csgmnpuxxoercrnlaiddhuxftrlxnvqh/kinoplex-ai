@@ -11,7 +11,8 @@ def input_loop(bot):
         try:
             msg = input("Message to send: ")
             if msg:
-                coro = bot.mainchannel.send(content=msg)
+                channel = bot.get_channel(bot.mainchannel)
+                coro = channel.send(content=msg)
                 asyncio.run_coroutine_threadsafe(coro, bot.loop)
         except KeyboardInterrupt:
             print("Interrupted.")
@@ -94,7 +95,7 @@ class KinoplexAI(commands.Bot):
 
         self.gamecfg["emote_role_channel"] = self.get_channel(self.gamecfg["role_channel"])
         self.gamecfg["react_message"] = await self.gamecfg["emote_role_channel"].fetch_message(self.gamecfg["react_msg"])
-        self.mainchannel = self.get_channel(self.main_channel)
+        self.mainchannel = self.main_channel 
 
         print(f"Successfully loaded configs")
         self.starting = False
